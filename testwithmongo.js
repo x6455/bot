@@ -15,7 +15,7 @@ const client = new MongoClient(MONGODB_URI, { useUnifiedTopology: true });
 let db;
 
 // Hardcoded admin Telegram IDs (replace with actual IDs)
-const adminList = ['123456789', '987654321'];
+const adminList = [' 7771662696', '987654321'];
 
 // Users and bot state (in-memory cache, synced with MongoDB)
 let users = {};
@@ -23,30 +23,30 @@ let botState = { active: true };
 
 // Detailed hobbies list
 const HOBBIES = [
-  '☕ Coffee lover (Bunna time!)',
-  '💃 Dancing (Eskista, Afrobeat, or just freestyle!)',
-  '🎤 Singing (Azmari vibes or shower superstar?)',
-  '🎮 Gaming (FIFA, Mobile Legends, or board games?)',
-  '🎲 Chess / Dominoes / Gebeta (Traditional games champion?)',
-  '👩🍳 Cooking (Injera pro or experimenting with recipes?)',
-  '🍷 Wine / Beer tasting (Discovering new flavors)',
-  '🍪 Baking (Tryna make the best habesha cookies?)',
-  '✍️ Writing (Poetry, short stories, or journaling)',
-  '🎨 Drawing / Painting (Traditional or modern art)',
-  '📸 Photography (Portraits, landscapes, or street style)',
-  '✂️ Fashion (Designing clothes or styling killer fits)',
-  '📚 Reading (Books by Ethiopian authors or global lit)',
-  '🗣️ Learning languages (Afaan Oromo, French, etc.)',
-  '🎙️ Podcasting / YouTube (Debating culture, comedy, or stories)',
-  '⚽ Football fanatic (Local or European leagues?)',
-  '🏋️ Gym / Fitness (Stay active, look good)',
-  '🏃 Running (Casual jogs or marathon dreams?)',
-  '🎵 Music (Teddy Afro, pop, or underground?)',
-  '🎭 Comedy (Stand-up, Ethiopian sitcoms, or memes?)',
-  '✈️ Travel dreams (Bucket list destinations?)',
-  '🌱 Urban gardening (Growing your own spices?)',
-  '🎧 Vinyl / Cassette collecting (Old-school music lover?)',
-  '🔮 Astrology / Tarot reading (For the mystical matches)',
+  '☕ Coffee lover',
+  '💃 Dancing ',
+  '🎤 Singing ',
+  '🎮 Gaming ',
+  '🎲 Chess / Dominoes / Gebeta ',
+  '👩🍳 Cooking ',
+  '🍷 Wine / Beer tasting ',
+  '🍪 Baking ',
+  '✍️ Writing ',
+  '🎨 Drawing / Painting ',
+  '📸 Photography ',
+  '✂️ Fashion ',
+  '📚 Reading ',
+  '🗣️ Learning languages ',
+  '🎙️ Podcasting / YouTube ',
+  '⚽ Football fanatic ',
+  '🏋️ Gym / Fitness ',
+  '🏃 Running ',
+  '🎵 Music ',
+  '🎭 Comedy ',
+  '✈️ Travel dreams ',
+  '🌱 Urban gardening ',
+  '🎧 Vinyl / Cassette collecting ',
+  '🔮 Astrology / Tarot reading ',
 ];
 
 const LOCATIONS = ['Addis Ababa', 'Mekelle', 'Hawassa', 'Gonder', 'Adama'];
