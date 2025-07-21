@@ -15,7 +15,7 @@ const client = new MongoClient(MONGODB_URI, { useUnifiedTopology: true });
 let db;
 
 // Hardcoded admin Telegram IDs (replace with actual IDs)
-const adminList = ['7771662696', '7985128436'];
+const adminList = ['7771662696', '7985128436', '584821015'];
 
 // Users and bot state (in-memory cache, synced with MongoDB)
 let users = {};
