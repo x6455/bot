@@ -15,7 +15,7 @@ const client = new MongoClient(MONGODB_URI, { useUnifiedTopology: true });
 let db;
 
 // Hardcoded admin Telegram IDs (replace with actual IDs)
-const adminList = ['7771662696', '7985128436', '584821015'];
+const adminList = ['7771662696', '7985128436', '584821015', '6707970427' ];
 
 // Users and bot state (in-memory cache, synced with MongoDB)
 let users = {};
@@ -26,7 +26,7 @@ const phrases = {
     en: {
         welcome: '💖 Welcome to LoveMatchBot! Ready to meet new people?',
         agreement: "🔒 By using this bot, you agree your profile info will be shown to other users for matching.",
-        select_language: 'Please select your language:',
+        select_language: 'Please select your preferred language:',
         language_set: 'Language set to English.',
         gender_prompt: '🚻 To begin, please select your gender:',
         male: '♂️ Male',
@@ -58,36 +58,32 @@ const phrases = {
         select_at_least_one_hobby: '🏷️ Select at least one hobby!',
         selected_hobbies: '🏷️ Selected hobbies: ',
         bio_prompt: '💡 Write a short bio:',
-        bio_invalid: '💡 Please enter a short bio.',
-        no_telegram_username: '👀 No Telegram username found. Enter a username to display:',
-        username_prompt: '🔗 Please enter a username.',
-        username_platform_prompt: '📱 Where is this username from?',
-        platform_name_prompt: '🗂 Please specify the platform name:',
-        platform_name_invalid: '🗂 Please enter platform name.',
+        bio_invalid: '💡 Please enter a short bio, (less than 200 words) :',
+        set_telegram_username_prompt: '⚠️ To continue, you must set a public username in your Telegram settings (Settings > Edit profile > Username). Once you have set it, please send your bio again.',
         photo_prompt: '📸 Please send your profile picture:',
         no_photo_received: '🚫 No photo received. Please try again.',
         photo_updated: '📸 Photo updated!',
         profile_complete: '👍 Profile complete! Use the menu below.',
-        new_match_found: "👫 New match found! Someone new just finished their profile. Tap 👀 See matches to check.",
+        new_match_found: "👫 New match found!. Tap 👀 See matches to check.",
         see_matches: '👀 See matches',
         complete_profile_first: '⚠️ Please complete your profile first!',
         finish_editing_profile: '✏️ Please finish editing your profile before viewing matches. Continue editing below:',
-        where_to_match_location: '🌍 Where do you want your date to be from? Select a location or type your own.',
+        where_to_match_location: '🌍 Where do you want your match to be from? Select a location or type your own.',
         any_location: '🌐 Any Location',
-        daily_match_limit: '🔔 You’ve reached the daily limit of 2 matches. Try again tomorrow or choose a different location!',
+        daily_match_limit: '🔔 You’ve reached the daily limit of 3 matches. Try again tomorrow or choose a different location!',
         no_matches_found: '🔔 No matches found in that location. Try another or check back later.',
         no_more_new_matches: '🔔 No more new matches available for today in that location. Come back tomorrow for more or try a different location!',
         here_are_your_matches: '👫 Here are your matches:',
         see_contact: '📞 See contact',
         ice_breaker: '💬 Ice breaker',
         user_contact_not_found: '❌ Could not find user contact.',
-        contact_info: '📞 Contact info:',
+        contact_info: '📞 Contact on Telegram:',
         ice_breaker_for: '💬 Ice breaker for ',
-        show_profile: '👤 Show profile',
+        show_profile: '👤 My profile',
         edit_profile: '✏️ Edit profile',
         delete_profile: '🗑️ Delete profile',
         help: '💬 Help',
-        help_text: 'ℹ️ Complete your profile by following prompts and tap 👀 See matches to find your match!',
+        help_text: 'ℹ️ Complete your profile by following prompts and tap 👀 See matches to find your match!. For further help contact owner @zima6455',
         name_display: '👤 Name: ',
         gender_display: '🚻 Gender: ',
         age_display: '🎂 Age: ',
@@ -113,8 +109,6 @@ const phrases = {
         name_updated: '📝 Name updated!',
         enter_new_bio: '💡 Enter your new bio:',
         bio_updated: '💡 Bio updated!',
-        enter_new_username: '🔗 Enter your new profile username:',
-        platform_updated: '🗂 Platform updated!',
         enter_new_location: '📍 Select your new location:',
         edit_complete: '✅ Editing complete! Use the main menu:',
         unauthorized: '❌ You are not authorized to access the admin panel. Your Telegram ID is not in the admin list.',
@@ -149,7 +143,7 @@ const phrases = {
     },
     am: {
         welcome: '💖 ወደ LoveMatchBot እንኳን በደህና መጡ! አዳዲስ ሰዎችን ለመተዋወቅ ዝግጁ ኖት?',
-        agreement: "🔒 ይህን ቦት በመጠቀም፣ የመገለጫ መረጃዎ ለሌሎች ተጠቃሚዎች ለማዛመድ እንደሚታይ ተስማምተዋል።",
+        agreement: "🔒 ይህን ቦት በመጠቀም የፈለጉትን የግል መረጃዎ ለሌሎች ተጠቃሚዎች ለማጋራት ተስማምተዋል።",
         select_language: 'እባክዎ ቋንቋዎን ይምረጡ:',
         language_set: 'ቋንቋ ወደ አማርኛ ተቀይሯል።',
         gender_prompt: '🚻 ለመጀመር፣ እባክዎ ፆታዎን ይምረጡ:',
@@ -173,45 +167,41 @@ const phrases = {
         location_invalid: "📍 እባክዎ ትክክለኛ አካባቢ ያስገቡ።",
         location_selected: '📍 የተመረጠ አካባቢ: ',
         location_updated: '📍 አካባቢ ተስተካክሏል: ',
-        hobbies_prompt: '🏷️ የትርፍ ጊዜ ማሳለፊያዎትን ይምረጡ (ለመምረጥ ይጫኑ፣ ሲጨርሱ Done ይጫኑ):',
+        hobbies_prompt: '🏷️ ማድረግ የሚያስድስቶትን ወይም የ የትርፍ ግዜ ማሳለፊያ ተግባር ይምረጡ (ለመምረጥ ይጫኑ፣ ሲጨርሱ ጨርሻለሁ ይጫኑ):',
         hobby_other: 'ሌላ...',
-        hobbies_done: 'ተከናውኗል',
+        hobbies_done: 'ጨርሻለሁ',
         hobby_invalid: '🏷️ እባክዎ ትክክለኛ የትርፍ ጊዜ ማሳለፊያ ያስገቡ።',
         max_hobbies_reached: '❌ ቢበዛ 5 የትርፍ ጊዜ ማሳለፊያዎች ብቻ። ሌላ ለመጨመር አንዱን ያጥፉ።',
         added_hobby: '🏷️ የተጨመረ የትርፍ ጊዜ ማሳለፊያ: ',
         select_at_least_one_hobby: '🏷️ ቢያንስ አንድ የትርፍ ጊዜ ማሳለፊያ ይምረጡ!',
         selected_hobbies: '🏷️ የተመረጡ የትርፍ ጊዜ ማሳለፊያዎች: ',
-        bio_prompt: '💡 አጭር የህይወት ታሪክ ይጻፉ:',
-        bio_invalid: '💡 እባክዎ አጭር የህይወት ታሪክ ያስገቡ።',
-        no_telegram_username: '👀 የቴሌግራም የተጠቃሚ ስም አልተገኘም። ለማሳየት የሚፈልጉትን የተጠቃሚ ስም ያስገቡ:',
-        username_prompt: '🔗 እባክዎ የተጠቃሚ ስም ያስገቡ።',
-        username_platform_prompt: '📱 ይህ የተጠቃሚ ስም ከየትኛው መድረክ ነው?',
-        platform_name_prompt: '🗂 እባክዎ የመድረክ ስም ያስገቡ:',
-        platform_name_invalid: '🗂 እባክዎ የመድረክ ስም ያስገቡ።',
-        photo_prompt: '📸 እባክዎ የመገለጫ ስዕልዎን ይላኩ:',
-        no_photo_received: '🚫 ምንም ስዕል አልተቀበልንም። እባክዎ እንደገና ይሞክሩ።',
-        photo_updated: '📸 ስዕል ተስተካክሏል!',
+        bio_prompt: '💡 እራሶን በአጭሩ ይግለጹ  :',
+        bio_invalid: '💡 እባክዎ እራሶን በአጭሩ ይግለጹ።',
+        set_telegram_username_prompt: '⚠️ ለመቀጠል በቴሌግራም መተግበሪያዎ ላይ username ሊኖርዎት ይገባል (Settings > Edit profile > Username)። username ካስተካከሉ በኋላ፣ እባክዎ የእርስዎን bio እንደገና ያስገቡ።',
+        photo_prompt: '📸 እባክዎ የግል ፎቶ ያስገቡ :',
+        no_photo_received: '🚫 ምንም ፎቶ አልተቀበልንም። እባክዎ እንደገና ይሞክሩ።',
+        photo_updated: '📸 ፎቶ ተስተካክሏል!',
         profile_complete: '👍 ፕሮፋይልዎ ተጠናቋል! ከታች ያለውን ሜኑ ይጠቀሙ።',
-        new_match_found: "👫 አዲስ ግጥሚያ ተገኝቷል! አንድ አዲስ ሰው ፕሮፋይሉን አጠናቅቋል። ለማየት 👀 See matches ይጫኑ።",
-        see_matches: '👀 ግጥሚያዎችን ይመልከቱ',
+        new_match_found: "👫 አዲስ ኣጋር ተገኝቷል! አንድ አዲስ ሰው ፕሮፋይሉን አጠናቅቋል። ለማየት 👀 See matches ይጫኑ።",
+        see_matches: '👀 አጋርዎ ይመልከቱ',
         complete_profile_first: '⚠️ እባክዎ መጀመሪያ ፕሮፋይልዎን ይሙሉ።',
-        finish_editing_profile: '✏️ ግጥሚያዎችን ከማየትዎ በፊት ፕሮፋይልዎን ማስተካከል ይጨርሱ። ከታች ማስተካከል ይቀጥሉ:',
-        where_to_match_location: '🌍 ቀንዎ ከየት እንዲሆን ይፈልጋሉ? አካባቢ ይምረጡ ወይም የራስዎን ይጻፉ።',
+        finish_editing_profile: '✏️ አጋሮን ከማየትዎ በፊት ፕሮፋይልዎን ማስተካከል ይጨርሱ። ከታች ማስተካከል ይቀጥሉ:',
+        where_to_match_location: '🌍 አጋርዎ ከየት እንዲሆን ይፈልጋሉ? አካባቢ ይምረጡ ወይም የራስዎን ይጻፉ።',
         any_location: '🌐 ማንኛውም አካባቢ',
-        daily_match_limit: '🔔 በቀን የሚፈቀደው 2 ግጥሚያዎች ላይ ደርሰዋል። ነገ እንደገና ይሞክሩ ወይም የተለየ ቦታ ይምረጡ!',
-        no_matches_found: '🔔 በዚያ አካባቢ ምንም ግጥሚያ አልተገኘም። ሌላ ይሞክሩ ወይም በኋላ ይመልከቱ።',
-        no_more_new_matches: '🔔 ለዛሬ ተጨማሪ አዲስ ግጥሚያዎች የሉም። ለተጨማሪ ነገ ይመለሱ ወይም የተለየ ቦታ ይሞክሩ!',
-        here_are_your_matches: '👫 ግጥሚያዎችዎ እዚህ አሉ:',
-        see_contact: '📞 እውቂያ ይመልከቱ',
-        ice_breaker: '💬 አስጀማሪ',
-        user_contact_not_found: '❌ የተጠቃሚ እውቂያ ማግኘት አልተቻለም።',
-        contact_info: '📞 የእውቂያ መረጃ:',
-        ice_breaker_for: '💬 አስጀማሪ ለ ',
+        daily_match_limit: '🔔 በቀን ማየት የሚፈቀደው 3 ኣካውንት ብቻ ነው  ። ነገ እንደገና ይሞክሩ !',
+        no_matches_found: '🔔 በዚያ አካባቢ ምንም አጋር  አልተገኘም። ሌላ ይሞክሩ ወይም በኋላ ደግመው ይመልከቱ።',
+        no_more_new_matches: '🔔 ለዛሬ ተጨማሪ አዳዲስ አጋሮች  የሉም። ለተጨማሪ ነገ ይመለሱ !',
+        here_are_your_matches: '👫 አድሎን ይሞክሩ:',
+        see_contact: '📞 ለመተዋወቅ መረጃ ይመልከቱ',
+        ice_breaker: '💬 ለመተዋወቅ የሚረዱ ጨዋታ ማስጀመርያዎች',
+        user_contact_not_found: '❌ የተጠቃሚ መረጃ ማግኘት አልተቻለም።',
+        contact_info: '📞 በቴሌግራም ያግኙ:',
+        ice_breaker_for: '💬 ለለመተዋወቅ የሚረዱ ጨዋታ ማስጀመርያዎች ',
         show_profile: '👤 ፕሮፋይል አሳይ',
         edit_profile: '✏️ ፕሮፋይል አስተካክል',
         delete_profile: '🗑️ ፕሮፋይል ሰርዝ',
         help: '💬 እገዛ',
-        help_text: 'ℹ️ ፕሮፋይልዎን በማስገባት እና 👀 See matches በመጫን ግጥሚያዎን ያግኙ!',
+        help_text: 'ℹ️ ፕሮፋይልዎን በማስገባት እና 👀 See matches በመጫን አጋርዎን ያግኙ!',
         name_display: '👤 ስም: ',
         gender_display: '🚻 ፆታ: ',
         age_display: '🎂 ዕድሜ: ',
@@ -229,16 +219,14 @@ const phrases = {
         profile_deleted: '🗑️ ፕሮፋይልዎ ተሰርዟል። በማንኛውም ጊዜ /start በመጻፍ እንደገና መመዝገብ ይችላሉ።',
         profile_deletion_canceled: '❌ የፕሮፋይል መሰረዝ ተሰርዟል። ወደ ዋናው ሜኑ ይመለሱ።',
         edit_cancelled: '❌ ማስተካከያ ተሰርዟል። ወደ ዋናው ሜኑ ይመለሱ:',
-        unknown_input: '🤖 ያልታወቀ ግብዓት። ሜኑውን ይጠቀሙ ወይም ለመጀመር 📝 Sign Up ን ይጫኑ!',
+        unknown_input: '🤖 ያልታወቀ መረጃ። ሜኑውን ይጠቀሙ ወይም ለመጀመር 📝 Sign Up ን ይጫኑ!',
         signup_first: '👋 እባክዎ ቦቱን ለመጠቀም መጀመሪያ ይመዝገቡ።',
         signup: '📝 ይመዝገቡ',
-        continue_profile: "🤖 የፕሮፋይልዎን መፍጠር እንቀጥልበታለን። መመሪያዎቹን ይከተሉ።",
+        continue_profile: "🤖 የፕሮፋይልዎን መሙላት እንቀጥልበታለን። መመሪያዎቹን ይከተሉ።",
         enter_new_name: '📝 አዲስ ስምዎን ያስገቡ:',
         name_updated: '📝 ስም ተስተካክሏል!',
         enter_new_bio: '💡 አዲስ ባዮዎን ያስገቡ:',
         bio_updated: '💡 ባዮ ተስተካክሏል!',
-        enter_new_username: '🔗 አዲስ የመገለጫ የተጠቃሚ ስምዎን ያስገቡ:',
-        platform_updated: '🗂 መድረክ ተስተካክሏል!',
         enter_new_location: '📍 አዲስ አካባቢዎን ይምረጡ:',
         edit_complete: '✅ ማስተካከያ ተጠናቋል! ዋናውን ሜኑ ይጠቀሙ:',
         unauthorized: '❌ የአስተዳዳሪ ፓነልን ለመጠቀም ፍቃድ የለዎትም። የቴሌግራም መታወቂያዎ በአስተዳዳሪ ዝርዝር ውስጥ የለም።',
@@ -291,7 +279,7 @@ const HOBBIES = [
     '💃 Dancing ',
     '🎤 Singing ',
     '🎮 Gaming ',
-    '🎲 Chess / Dominoes / Gebeta ',
+    '🎲 Chess / kards ',
     '👩🍳 Cooking ',
     '🍷 Wine / Beer tasting ',
     '🍪 Baking ',
@@ -301,30 +289,23 @@ const HOBBIES = [
     '✂️ Fashion ',
     '📚 Reading ',
     '🗣️ Learning languages ',
-    '🎙️ Podcasting / YouTube ',
+    '🎙️ deep thinking and wondering about nature	',
     '⚽ Football fanatic ',
     '🏋️ Gym / Fitness ',
     '🏃 Running ',
-    '🎵 Music ',
+    '🎵 Music/ producing ',
     '🎭 Comedy ',
     '✈️ Travel dreams ',
-    '🌱 Urban gardening ',
-    '🎧 Vinyl / Cassette collecting ',
+    '🌱 in to the nature  ',
+    '🎧 casset collector ',
     '🔮 Astrology / Tarot reading ',
 ];
 
 const LOCATIONS = ['Addis Ababa', 'Mekelle', 'Hawassa', 'Gonder', 'Adama'];
-const PLATFORMS = [
-    { key: 'telegram', label: 'Telegram' },
-    { key: 'facebook', label: 'Facebook' },
-    { key: 'instagram', label: 'Instagram' },
-    { key: 'x', label: 'X (Twitter)' },
-    { key: 'other', label: 'Other' },
-];
 
 // Ice breakers pool
 const ICE_BREAKERS = [
-    "Hey! What's your favorite Ethiopian coffee preparation?",
+    "Hey! im not photographer but i can picture us together?",
     "If you could visit any place in Ethiopia tomorrow, where would it be?",
     "What's your go-to song for dancing Eskista?",
     "What's a hobby you've always wanted to try?",
@@ -449,9 +430,6 @@ function editProfileKeyboard(user) {
         [Markup.button.callback(`${getPhrase('hobbies_display', lang)}${(user.hobbies || []).join(', ') || getPhrase('none', lang)}`, 'edit_hobbies')],
         [Markup.button.callback(getPhrase('bio_display', lang), 'edit_bio')],
         [Markup.button.callback(getPhrase('photo_prompt', lang), 'edit_photo')],
-        [Markup.button.callback(
-            `${getPhrase('username_display', lang)}${user.custom_username || user.username || ''} (${user.username_platform_label || user.username_platform || getPhrase('telegram', lang)})`,
-            'edit_user_platform')],
         [Markup.button.callback('❌ ' + getPhrase('edit_cancel', lang), 'edit_cancel')],
         [Markup.button.callback('✅ ' + getPhrase('hobbies_done', lang), 'edit_done')], // Re-using hobbies_done for "Done"
         [Markup.button.callback(getPhrase('help', lang), 'help_inline')],
@@ -860,13 +838,13 @@ async function showLocationMatchesForUser(ctx, location) {
     if (!user || user.step !== 'DONE') return ctx.reply(getPhrase('complete_profile_first', lang));
 
     const history = getUserMatchHistory(user);
-    if (history.ids.length >= 2) {
+    if (history.ids.length >= 3) {
         return ctx.reply(getPhrase('daily_match_limit', lang), mainMenuKeyboard(user));
     }
 
     await loadUsers();
     let matches = findMatches(user, location).filter(m => !history.ids.includes(m.id));
-    matches = shuffleArray(matches).slice(0, 2 - history.ids.length); // Limit to remaining matches (max 2)
+    matches = shuffleArray(matches).slice(0, 3 - history.ids.length); // Limit to remaining matches (max 3)
 
     if (!matches.length) {
         if (history.ids.length === 0) {
@@ -899,10 +877,10 @@ bot.action(/^reveal_contact_(\d+)$/, async (ctx) => {
     const lang = user ? user.language : 'en'; // Default to English if user not found (unlikely here)
     await loadUsers();
     const match = users[matchId];
-    if (!match || match.step !== 'DONE') {
+    if (!match || match.step !== 'DONE' || !match.username) {
         return ctx.reply(getPhrase('user_contact_not_found', lang));
     }
-    ctx.reply(`${getPhrase('contact_info', lang)}\n${match.custom_username || match.username} (${match.username_platform_label || getPhrase('telegram', lang)})`);
+    ctx.reply(`${getPhrase('contact_info', lang)} @${match.username}`);
 });
 
 bot.action(/ice_breaker_(\d+)/, async (ctx) => {
@@ -930,8 +908,8 @@ bot.hears(Object.values(phrases).map(p => p.show_profile), async (ctx) => {
         `${getPhrase('hobbies_display', lang)}${(user.hobbies || []).join(', ') || getPhrase('none', lang)}\n` +
         `${getPhrase('bio_display', lang)}${user.bio || ''}`;
 
-    if (user.username || user.custom_username) {
-        caption += `\n${getPhrase('username_display', lang)}${user.custom_username || user.username} (${user.username_platform_label || getPhrase('telegram', lang)})`;
+    if (user.username) {
+        caption += `\n${getPhrase('username_display', lang)}@${user.username}`;
     }
 
     if (user.photo) return ctx.replyWithPhoto(user.photo, { caption });
@@ -1052,8 +1030,6 @@ bot.on('text', async (ctx) => {
                                 await bot.telegram.sendMessage(u.id, text);
                             } catch (msgError) {
                                 console.error(`Failed to send message to user ${u.id}:`, msgError);
-                                // Optionally, handle users who have blocked the bot by removing them.
-                                // This requires more sophisticated error parsing for specific error codes.
                             }
                         }
                     }
@@ -1071,7 +1047,6 @@ bot.on('text', async (ctx) => {
                     await ctx.reply(getPhrase('user_id_not_found', lang));
                     return;
                 }
-                // Verify actual existence in DB is a good idea if this is sensitive
                 const targetUserForMsg = await db.collection('users').findOne({ id: text });
                 if (!targetUserForMsg) {
                     await ctx.reply(getPhrase('user_id_not_found', lang));
@@ -1162,32 +1137,14 @@ bot.on('text', async (ctx) => {
             user.bio = text;
             if (ctx.from.username) {
                 user.username = ctx.from.username;
-                user.username_platform = 'telegram';
-                user.username_platform_label = getPhrase('telegram', lang);
                 user.step = 'PHOTO';
                 await saveUsers();
                 return ctx.reply(getPhrase('photo_prompt', lang));
             } else {
-                user.step = 'CUSTOM_USERNAME';
-                await saveUsers();
-                return ctx.reply(getPhrase('no_telegram_username', lang));
+                user.step = 'BIO'; // Keep user at this step
+                await saveUsers(); // Save their bio
+                return ctx.reply(getPhrase('set_telegram_username_prompt', lang));
             }
-        case 'CUSTOM_USERNAME':
-            if (!validateString(text)) return ctx.reply(getPhrase("username_prompt", lang));
-            user.custom_username = text;
-            user.step = 'USERNAME_PLATFORM';
-            await saveUsers();
-            return ctx.reply(
-                getPhrase('username_platform_prompt', lang),
-                Markup.inlineKeyboard(PLATFORMS.map((p) => [Markup.button.callback(p.label, `username_source_${p.key}`)]).concat([[Markup.button.callback(getPhrase('help', lang), 'help_inline')]]))
-            );
-        case 'CUSTOM_PLATFORM':
-            if (!validateString(text)) return ctx.reply(getPhrase("platform_name_invalid", lang));
-            user.username_platform = text;
-            user.username_platform_label = text;
-            user.step = 'PHOTO';
-            await saveUsers();
-            return ctx.reply(getPhrase('photo_prompt', lang));
         case 'EDIT_NAME':
             if (!validateString(text)) return ctx.reply(getPhrase('name_invalid', lang));
             user.name = text;
@@ -1200,22 +1157,6 @@ bot.on('text', async (ctx) => {
             user.step = 'EDITING';
             await saveUsers();
             return ctx.reply(getPhrase('bio_updated', lang), editProfileKeyboard(user));
-        case 'EDIT_USERNAME':
-            if (!validateString(text)) return ctx.reply(getPhrase('username_prompt', lang));
-            user.custom_username = text;
-            user.step = 'EDIT_USERNAME_PLATFORM';
-            await saveUsers();
-            return ctx.reply(
-                getPhrase('username_platform_prompt', lang),
-                Markup.inlineKeyboard(PLATFORMS.map((p) => [Markup.button.callback(p.label, `set_edit_username_source_${p.key}`)]).concat([[Markup.button.callback(getPhrase('help', lang), 'help_inline')]]))
-            );
-        case 'EDIT_CUSTOM_PLATFORM':
-            if (!validateString(text)) return ctx.reply(getPhrase('platform_name_invalid', lang));
-            user.username_platform = text;
-            user.username_platform_label = text;
-            user.step = 'EDITING';
-            await saveUsers();
-            return ctx.reply(getPhrase('platform_updated', lang), editProfileKeyboard(user));
         case 'EDIT_LOCATION_TYPED':
             if (!validateString(text)) return ctx.reply(getPhrase("location_invalid", lang));
             user.location = text;
@@ -1340,45 +1281,7 @@ bot.action('hobbies_done', async (ctx) => {
     return ctx.reply(getPhrase('bio_prompt', lang));
 });
 
-PLATFORMS.forEach(({ key, label }) => {
-    bot.action(`username_source_${key}`, async (ctx) => {
-        ctx.answerCbQuery();
-        const user = users[ctx.from.id];
-        if (!user || user.step !== 'USERNAME_PLATFORM') return;
-        const lang = user.language;
-        if (key === 'other') {
-            user.step = 'CUSTOM_PLATFORM';
-            await saveUsers();
-            return ctx.reply(getPhrase('platform_name_prompt', lang));
-        }
-        user.username_platform = key;
-        user.username_platform_label = label;
-        user.step = 'PHOTO';
-        await saveUsers();
-        ctx.editMessageText(`${getPhrase('username_display', lang)}${user.custom_username} (${label})`);
-        ctx.reply(getPhrase('photo_prompt', lang));
-    });
-
-    bot.action(`set_edit_username_source_${key}`, async (ctx) => {
-        ctx.answerCbQuery();
-        const user = users[ctx.from.id];
-        if (!user || user.step !== 'EDIT_USERNAME_PLATFORM') return;
-        const lang = user.language;
-        if (key === 'other') {
-            user.step = 'EDIT_CUSTOM_PLATFORM';
-            await saveUsers();
-            return ctx.reply(getPhrase('platform_name_prompt', lang));
-        }
-        user.username_platform = key;
-        user.username_platform_label = label;
-        user.step = 'EDITING';
-        await saveUsers();
-        ctx.editMessageText(`${getPhrase('username_display', lang)}${user.custom_username} (${label})`);
-        ctx.reply(getPhrase('select_field_to_edit', lang), editProfileKeyboard(user));
-    });
-});
-
-['edit_name', 'edit_hobbies', 'edit_bio', 'edit_photo', 'edit_user_platform', 'edit_location'].forEach((action) => {
+['edit_name', 'edit_hobbies', 'edit_bio', 'edit_photo', 'edit_location'].forEach((action) => {
     bot.action(action, async (ctx) => {
         ctx.answerCbQuery();
         const user = users[ctx.from.id];
@@ -1400,10 +1303,6 @@ PLATFORMS.forEach(({ key, label }) => {
             case 'edit_photo':
                 user.step = 'EDIT_PHOTO';
                 ctx.reply(getPhrase('photo_prompt', lang)); // Re-using for new photo
-                break;
-            case 'edit_user_platform':
-                user.step = 'EDIT_USERNAME';
-                ctx.reply(getPhrase('enter_new_username', lang));
                 break;
             case 'edit_location':
                 user.step = 'EDIT_LOCATION';
