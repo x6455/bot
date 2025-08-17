@@ -2,9 +2,9 @@
   "name": "telegram-bot",
   "version": "1.0.0",
   "description": "My Telegram bot with Telegraf, Express, MongoDB, and sessions",
-  "main": "muaz.js",
+  "main": "lang.js",
   "scripts": {
-    "start": "node muaz.js"
+    "start": "node lang.js"
   },
   "dependencies": {
     "telegraf": "^4.16.0",
